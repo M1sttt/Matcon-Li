@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1085133517922",
+    "project_id": "matconli-37b5b",
+    "storage_bucket": "matconli-37b5b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1085133517922:android:4f77a511d778adce388d3b",
+        "android_client_info": {
+          "package_name": "com.colman.matconli"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCueYdOG9yNPUKuLCAXGQFbTnjaedz9H-w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
