@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".features.recipe.AddRecipeFragment">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp">
+
+        <ImageView
+            android:id="@+id/fragment_add_recipe_image_view"
+            android:layout_width="0dp"
+            android:layout_height="200dp"
+            android:background="@color/material_dynamic_neutral90"
+            android:contentDescription="Recipe Image"
+            android:scaleType="centerCrop"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageButton
+            android:id="@+id/fragment_add_recipe_button_select_image"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_gravity="bottom|end"
+            android:background="@drawable/circle_background"
+            android:contentDescription="Take Photo"
+            android:padding="6dp"
+            android:src="@android:drawable/ic_menu_camera"
+            app:layout_constraintBottom_toBottomOf="@+id/fragment_add_recipe_image_view"
+            app:layout_constraintEnd_toEndOf="@+id/fragment_add_recipe_image_view"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="@+id/fragment_add_recipe_image_view"
+            app:layout_constraintTop_toTopOf="@+id/fragment_add_recipe_image_view"
+            app:layout_constraintVertical_bias="1.0" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/fragment_add_recipe_text_input_layout_title"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="34dp"
+            android:hint="Recipe Title"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/fragment_add_recipe_image_view">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/fragment_add_recipe_edit_text_title"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:inputType="text" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/fragment_add_recipe_text_input_layout_description"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:hint="Description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/fragment_add_recipe_text_input_layout_title">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/fragment_add_recipe_edit_text_description"
+                android:layout_width="match_parent"
+                android:layout_height="188dp"
+                android:gravity="top"
+                android:inputType="textMultiLine"
+                android:minLines="5" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/fragment_add_recipe_button_save"
+            android:layout_width="120dp"
+            android:layout_height="50dp"
+            android:layout_marginStart="40dp"
+            android:layout_marginTop="48dp"
+            android:text="Save"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/fragment_add_recipe_text_input_layout_description" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/fragment_add_recipe_button_cancel"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="40dp"
+            android:background="#00FFFFFF"
+            android:text="Cancel"
+            app:strokeWidth="1dp"
+            app:strokeColor="#D5D5D5"
+            app:layout_constraintBaseline_toBaselineOf="@+id/fragment_add_recipe_button_save"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.544"
+            app:layout_constraintStart_toEndOf="@+id/fragment_add_recipe_button_save" />
+
+        <ProgressBar
+            android:id="@+id/fragment_add_recipe_progress_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@id/fragment_add_recipe_button_save"
+            app:layout_constraintEnd_toEndOf="@id/fragment_add_recipe_button_save"
+            app:layout_constraintStart_toStartOf="@id/fragment_add_recipe_button_save"
+            app:layout_constraintTop_toTopOf="@id/fragment_add_recipe_button_save" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>
+
