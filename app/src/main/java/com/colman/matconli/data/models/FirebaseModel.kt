@@ -3,11 +3,19 @@ package com.colman.matconli.data.models
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.colman.matconli.model.Recipe
 
 class FirebaseModel {
 
     private val db = Firebase.firestore
+
+    init {
+        val settings = FirebaseFirestoreSettings.Builder()
+            .setPersistenceEnabled(false)
+            .build()
+        db.firestoreSettings = settings
+    }
 
     private companion object COLLECTIONS {
         const val RECIPES = "recipes"
