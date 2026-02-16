@@ -94,8 +94,11 @@ class RecipeDetailFragment : BaseFragment() {
 
         val currentUserId = getCurrentUserId()
         if (currentUserId == recipe.ownerId) {
-            binding?.fragmentRecipeDetailButtonEdit?.visibility = View.VISIBLE
-            binding?.fragmentRecipeDetailButtonDelete?.visibility = View.VISIBLE
+            binding?.fragmentRecipeDetailButtonEdit?.show()
+            binding?.fragmentRecipeDetailButtonDelete?.show()
+        } else {
+            binding?.fragmentRecipeDetailButtonEdit?.hide()
+            binding?.fragmentRecipeDetailButtonDelete?.hide()
         }
     }
 

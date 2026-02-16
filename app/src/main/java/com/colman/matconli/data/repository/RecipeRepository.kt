@@ -32,19 +32,23 @@ class RecipeRepository private constructor() {
     fun refreshRecipes() {
         val lastUpdated = Recipe.Companion.lastUpdated
 
-        firebaseModel.getAllRecipes(lastUpdated) { recipesList ->
+        firebaseModel.getAllRecipes(0L) { recipesList ->
             executor.execute {
                 var time = lastUpdated
-                for (recipe in recipesList) {
-                    database.recipeDao().insert(recipe)
-                    recipe.lastUpdated?.let { recipeLastUpdated ->
-                        if (time < recipeLastUpdated) {
-                            time = recipeLastUpdated
+                if (recipesList.isNotEmpty()) {
+                    database.recipeDao().insertAll(recipesList)
+                    val remoteIds = recipesList.map { it.id }
+                    database.recipeDao().deleteNotIn(remoteIds)
+                    for (recipe in recipesList) {
+                        recipe.lastUpdated?.let { recipeLastUpdated ->
+                            if (time < recipeLastUpdated) {
+                                time = recipeLastUpdated
+                            }
                         }
                     }
-                }
-                if (recipesList.isNotEmpty()) {
                     Recipe.Companion.lastUpdated = time
+                } else {
+                    database.recipeDao().deleteAll()
                 }
             }
         }
