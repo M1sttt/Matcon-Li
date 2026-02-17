@@ -24,6 +24,12 @@ interface RecipeDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAll(recipes: List<Recipe>)
 
+    @Query("DELETE FROM Recipe WHERE id NOT IN (:ids)")
+    fun deleteNotIn(ids: List<String>)
+
+    @Query("DELETE FROM Recipe")
+    fun deleteAll()
+
     @Update
     fun update(recipe: Recipe)
 
