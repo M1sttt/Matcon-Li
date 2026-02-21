@@ -9,17 +9,18 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.view.MenuProvider
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.colman.matconli.R
 import com.colman.matconli.databinding.FragmentRecipeDetailBinding
 import com.colman.matconli.model.Recipe
-import com.colman.matconli.data.repository.RecipeRepository
 import com.colman.matconli.utilis.hide
 import com.colman.matconli.utilis.show
 import com.colman.matconli.base.BaseFragment
 import com.squareup.picasso.Picasso
+import com.colman.matconli.features.recipe.RecipeDetailViewModel
 
 class RecipeDetailFragment : BaseFragment() {
 
@@ -27,6 +28,7 @@ class RecipeDetailFragment : BaseFragment() {
 
     private val args: RecipeDetailFragmentArgs by navArgs()
     private var recipe: Recipe? = null
+    private val viewModel: RecipeDetailViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -41,7 +43,10 @@ class RecipeDetailFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupMenu()
-        loadRecipe()
+        setupObservers()
+        binding?.fragmentRecipeDetailButtonEdit?.hide()
+        binding?.fragmentRecipeDetailButtonDelete?.hide()
+        viewModel.loadRecipe(args.recipeId)
         setupClickListeners()
     }
 
@@ -63,16 +68,24 @@ class RecipeDetailFragment : BaseFragment() {
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
-    private fun loadRecipe() {
-        binding?.fragmentRecipeDetailProgressBar?.show()
-        RecipeRepository.shared.getRecipeById(args.recipeId) { recipe ->
-            activity?.runOnUiThread {
-                if (binding == null) return@runOnUiThread
-                binding?.fragmentRecipeDetailProgressBar?.hide()
-                recipe?.let {
-                    this.recipe = it
-                    displayRecipe(it)
-                }
+    private fun setupObservers() {
+        viewModel.loading.observe(viewLifecycleOwner) { loading ->
+            if (binding == null) return@observe
+            if (loading) binding?.fragmentRecipeDetailProgressBar?.show() else binding?.fragmentRecipeDetailProgressBar?.hide()
+        }
+
+        viewModel.recipe.observe(viewLifecycleOwner) { r ->
+            r?.let {
+                this.recipe = it
+                displayRecipe(it)
+            }
+        }
+
+        viewModel.deleteComplete.observe(viewLifecycleOwner) { done ->
+            if (done) {
+                if (binding == null) return@observe
+                Toast.makeText(requireContext(), "Recipe deleted", Toast.LENGTH_SHORT).show()
+                findNavController().popBackStack()
             }
         }
     }
@@ -112,15 +125,8 @@ class RecipeDetailFragment : BaseFragment() {
         }
 
         binding?.fragmentRecipeDetailButtonDelete?.setOnClickListener {
-            recipe?.let { r ->
-                binding?.fragmentRecipeDetailProgressBar?.show()
-                RecipeRepository.shared.deleteRecipe(r)
-                activity?.runOnUiThread {
-                    if (binding == null) return@runOnUiThread
-                    binding?.fragmentRecipeDetailProgressBar?.hide()
-                    Toast.makeText(requireContext(), "Recipe deleted", Toast.LENGTH_SHORT).show()
-                    findNavController().popBackStack()
-                }
+            recipe?.let {
+                viewModel.deleteRecipe()
             }
         }
     }
