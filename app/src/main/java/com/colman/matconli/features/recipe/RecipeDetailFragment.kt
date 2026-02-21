@@ -44,6 +44,8 @@ class RecipeDetailFragment : BaseFragment() {
 
         setupMenu()
         setupObservers()
+        binding?.fragmentRecipeDetailButtonEdit?.hide()
+        binding?.fragmentRecipeDetailButtonDelete?.hide()
         viewModel.loadRecipe(args.recipeId)
         setupClickListeners()
     }
