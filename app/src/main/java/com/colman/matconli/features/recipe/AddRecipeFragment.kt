@@ -17,6 +17,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.colman.matconli.R
@@ -40,6 +41,7 @@ class AddRecipeFragment : BaseFragment() {
     private var selectedImageUri: Uri? = null
     private var photoUri: Uri? = null
     private val storageModel = StorageModel()
+    private val viewModel: AddRecipeViewModel by viewModels()
 
     private val cameraPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -86,24 +88,34 @@ class AddRecipeFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         args.recipeId?.let { id ->
-            loadExistingRecipe(id)
+            viewModel.loadRecipe(id)
         }
 
+        setupObservers()
         setupClickListeners()
     }
 
-    private fun loadExistingRecipe(id: String) {
-        binding?.fragmentAddRecipeProgressBar?.show()
-        RecipeRepository.shared.getRecipeById(id) { recipe ->
-            activity?.runOnUiThread {
-                if (binding == null) return@runOnUiThread
-                binding?.fragmentAddRecipeProgressBar?.hide()
-                recipe?.let {
-                    existingRecipe = it
-                    binding?.fragmentAddRecipeEditTextTitle?.setText(it.title)
-                    binding?.fragmentAddRecipeEditTextDescription?.setText(it.description)
-                    loadImagePreview(it.imageUrl)
-                }
+    private fun setupObservers() {
+        viewModel.loading.observe(viewLifecycleOwner) { loading ->
+            if (binding == null) return@observe
+            if (loading) binding?.fragmentAddRecipeProgressBar?.show() else binding?.fragmentAddRecipeProgressBar?.hide()
+            binding?.fragmentAddRecipeButtonSave?.isEnabled = !loading
+        }
+
+        viewModel.recipe.observe(viewLifecycleOwner) { recipe ->
+            recipe?.let {
+                existingRecipe = it
+                binding?.fragmentAddRecipeEditTextTitle?.setText(it.title)
+                binding?.fragmentAddRecipeEditTextDescription?.setText(it.description)
+                loadImagePreview(it.imageUrl)
+            }
+        }
+
+        viewModel.actionComplete.observe(viewLifecycleOwner) { done ->
+            if (done) {
+                if (binding == null) return@observe
+                Toast.makeText(requireContext(), if (existingRecipe != null) "Recipe updated!" else "Recipe saved!", Toast.LENGTH_SHORT).show()
+                findNavController().popBackStack()
             }
         }
     }
@@ -193,33 +205,17 @@ class AddRecipeFragment : BaseFragment() {
             )
 
             if (isEditing) {
-                RecipeRepository.shared.updateRecipe(
-                    storageAPI = StorageModel.StorageAPI.CLOUDINARY,
-                    image = bitmap,
-                    recipe = recipe
-                ) {
-                    activity?.runOnUiThread {
-                        if (binding == null) return@runOnUiThread
-                        binding?.fragmentAddRecipeProgressBar?.hide()
-                        binding?.fragmentAddRecipeButtonSave?.isEnabled = true
-                        Toast.makeText(requireContext(), "Recipe updated!", Toast.LENGTH_SHORT).show()
-                        findNavController().popBackStack()
-                    }
-                }
+                viewModel.updateRecipe(
+                    StorageModel.StorageAPI.CLOUDINARY,
+                    bitmap,
+                    recipe
+                )
             } else {
-                RecipeRepository.shared.addRecipe(
-                    storageAPI = StorageModel.StorageAPI.CLOUDINARY,
-                    image = bitmap,
-                    recipe = recipe
-                ) {
-                    activity?.runOnUiThread {
-                        if (binding == null) return@runOnUiThread
-                        binding?.fragmentAddRecipeProgressBar?.hide()
-                        binding?.fragmentAddRecipeButtonSave?.isEnabled = true
-                        Toast.makeText(requireContext(), "Recipe saved!", Toast.LENGTH_SHORT).show()
-                        findNavController().popBackStack()
-                    }
-                }
+                viewModel.addRecipe(
+                    StorageModel.StorageAPI.CLOUDINARY,
+                    bitmap,
+                    recipe
+                )
             }
         } catch (e: Exception) {
             binding?.fragmentAddRecipeProgressBar?.hide()

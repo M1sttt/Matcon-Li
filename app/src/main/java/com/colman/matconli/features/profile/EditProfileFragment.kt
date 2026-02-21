@@ -18,6 +18,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.colman.matconli.base.MainActivity
 import com.colman.matconli.R
@@ -27,6 +28,7 @@ import com.colman.matconli.data.models.StorageModel
 import com.colman.matconli.model.User
 import com.colman.matconli.utilis.ImageUtils
 import com.google.firebase.auth.FirebaseAuth
+import com.colman.matconli.features.profile.EditProfileViewModel
 import java.io.File
 
 class EditProfileFragment : Fragment() {
@@ -34,6 +36,7 @@ class EditProfileFragment : Fragment() {
     private var binding: FragmentEditProfileBinding? = null
     private val auth = FirebaseAuth.getInstance()
     private var currentUser: User? = null
+    private val viewModel: EditProfileViewModel by viewModels()
     private var selectedImageUri: Uri? = null
     private var photoUri: Uri? = null
 
@@ -72,6 +75,7 @@ class EditProfileFragment : Fragment() {
 
         try {
             setupClickListeners()
+            setupObservers()
             loadCurrentUser()
         } catch (e: Exception) {
             e.printStackTrace()
@@ -80,16 +84,35 @@ class EditProfileFragment : Fragment() {
 
     private fun loadCurrentUser() {
         val userId = auth.currentUser?.uid ?: return
-
         binding?.fragmentEditProfileProgressBar?.visibility = View.VISIBLE
-
-        UserRepository.shared.getUserByIdLiveData(userId).observe(viewLifecycleOwner) { user ->
+        viewModel.getUserLiveData(userId).observe(viewLifecycleOwner) { user ->
             binding?.fragmentEditProfileProgressBar?.visibility = View.GONE
             currentUser = user
             user?.let {
                 binding?.fragmentEditProfileEditTextName?.setText(it.name)
                 binding?.fragmentEditProfileTextViewEmail?.text = "Email: ${it.email}"
                 loadImagePreview(it.avatarUrl)
+            }
+        }
+    }
+
+    private fun setupObservers() {
+        viewModel.loading.observe(viewLifecycleOwner) { loading ->
+            if (binding == null) return@observe
+            binding?.fragmentEditProfileProgressBar?.visibility = if (loading) View.VISIBLE else View.GONE
+            binding?.fragmentEditProfileButtonSave?.isEnabled = !loading
+            binding?.fragmentEditProfileButtonCancel?.isEnabled = !loading
+        }
+
+        viewModel.actionComplete.observe(viewLifecycleOwner) { success ->
+            if (success == null) return@observe
+            if (binding == null) return@observe
+            if (success) {
+                Toast.makeText(requireContext(), "Profile updated", Toast.LENGTH_SHORT).show()
+                (activity as? MainActivity)?.loadUserProfile()
+                findNavController().popBackStack()
+            } else {
+                Toast.makeText(requireContext(), "Failed to update profile", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -167,25 +190,11 @@ class EditProfileFragment : Fragment() {
         try {
             val bitmap = selectedImageUri?.let { getBitmapFromUri(it) }
 
-            UserRepository.shared.updateUser(
-                storageAPI = StorageModel.StorageAPI.CLOUDINARY,
-                image = bitmap,
-                user = updatedUser
-            ) { success ->
-                activity?.runOnUiThread {
-                    binding?.fragmentEditProfileProgressBar?.visibility = View.GONE
-                    binding?.fragmentEditProfileButtonSave?.isEnabled = true
-                    binding?.fragmentEditProfileButtonCancel?.isEnabled = true
-
-                    if (success) {
-                        Toast.makeText(requireContext(), "Profile updated", Toast.LENGTH_SHORT).show()
-                        (activity as? MainActivity)?.loadUserProfile()
-                        findNavController().popBackStack()
-                    } else {
-                        Toast.makeText(requireContext(), "Failed to update profile", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
+            viewModel.updateUser(
+                StorageModel.StorageAPI.CLOUDINARY,
+                bitmap,
+                updatedUser
+            )
         } catch (e: Exception) {
             binding?.fragmentEditProfileProgressBar?.visibility = View.GONE
             binding?.fragmentEditProfileButtonSave?.isEnabled = true
